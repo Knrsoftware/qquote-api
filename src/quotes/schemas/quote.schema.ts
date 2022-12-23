@@ -8,7 +8,7 @@ export type QuoteDocument = Quote & Document;
 export class Quote {
   @Prop({ type: String })
   @Expose()
-  id: string;
+  _id: string;
 
   @Prop({ type: String })
   @Expose()

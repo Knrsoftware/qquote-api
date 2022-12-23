@@ -23,7 +23,7 @@ export class QuotesService {
     offset: number,
   ): Promise<{ quotes: Quote[]; total: number }> {
     const total = await this.quotesModel.countDocuments();
-    const quotes = await this.quotesModel.find({
+    const quotes = await this.quotesModel.find({}, null, {
       ...(limit && { limit: limit }),
       ...(offset && { skip: offset }),
     });
