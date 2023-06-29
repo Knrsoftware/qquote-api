@@ -77,9 +77,11 @@ export class QuotesService {
     const userLike = await this.userLikesModel.findOne({ user_id: userId, quote_id: quoteId });
     if (userLike) {
       await this.userLikesModel.deleteOne({ user_id: userId, quote_id: quoteId });
+      return "Quote disliked";
     }
     const create_userLike = new this.userLikesModel({ user_id: userId, quote_id: quoteId });
     await create_userLike.save();
+    return "Quote liked";
   }
 
   async remove(userId: string, quoteId: string) {
