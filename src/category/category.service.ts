@@ -35,6 +35,10 @@ export class CategoryService {
     return await this.categoriesModel.findById(id);
   }
 
+  async getCategoryByName(name: string): Promise<Category> {
+    return await this.categoriesModel.findOne({ name });
+  }
+
   async deleteCategory(id: string): Promise<any> {
     return await this.categoriesModel.deleteOne({ id });
   }

@@ -22,8 +22,8 @@ export class QuotesController {
   }
 
   @Get()
-  @UseGuards(AuthorizationGuard)
   @isPublic()
+  @UseGuards(AuthorizationGuard)
   async findAll(@Req() req, @Query() query: PaginationParamsDto) {
     const userId = req?.user?.sub || null;
     return this.sharedService.successResponse("Get Quotes", await this.quotesService.findAll(userId, query));

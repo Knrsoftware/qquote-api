@@ -37,6 +37,10 @@ export class TagsService {
     return await this.tagsModel.findById(id);
   }
 
+  async getTagByValue(value: string): Promise<Tags> {
+    return await this.tagsModel.findOne({ value });
+  }
+
   async deleteTag(id: string): Promise<any> {
     return await this.tagsModel.deleteOne({ id });
   }

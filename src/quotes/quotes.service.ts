@@ -35,8 +35,8 @@ export class QuotesService {
     const quotes = await this.quotesModel.find(
       {
         ...(query.addedBy && { created_by: query.addedBy }),
-        ...(query.category && { category: await this.categoryService.getCategory(query.category) }),
-        ...(query.tag && { tags: { $in: await this.tagsService.getTag(query.tag) } }),
+        ...(query.category && { category: await this.categoryService.getCategoryByName(query.category) }),
+        ...(query.tag && { tags: { $in: await this.tagsService.getTagByValue(query.tag) } }),
       },
       {},
       {
