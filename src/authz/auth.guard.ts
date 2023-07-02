@@ -37,6 +37,7 @@ export class AuthorizationGuard implements CanActivate {
         req["user"] = user;
         const permissions = this.reflector.get<string[]>("permissions", context.getHandler());
         if (permissions) {
+          // console.log(user.permissions, permissions);
           return user.permissions.some((e: string) => permissions.includes(e));
         }
         return true;

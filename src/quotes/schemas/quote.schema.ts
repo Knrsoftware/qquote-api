@@ -36,16 +36,13 @@ export class Quote {
   @Expose()
   created_by: string;
 
+  @Prop({ type: Boolean, default: false })
+  verified: boolean;
+
   @Prop({ type: Number, default: 0 })
   total_likes: number;
   @Prop({ type: Boolean, default: false })
   liked: boolean;
-
-  @Prop({ default: Date.now() })
-  created_at: Date;
-
-  @Prop({ default: Date.now() })
-  updated_at: Date;
 }
 
 export const QuoteSchema = SchemaFactory.createForClass(Quote);

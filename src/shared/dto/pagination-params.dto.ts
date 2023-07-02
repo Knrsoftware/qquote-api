@@ -5,12 +5,12 @@ export class PaginationParamsDto {
   @IsNumber()
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10), { toClassOnly: true })
-  limit = 100;
+  limit = 10;
 
   @IsNumber()
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10), { toClassOnly: true })
-  offset = 0;
+  page = 0;
 
   @IsOptional()
   @IsString()

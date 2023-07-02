@@ -4,7 +4,6 @@ import { CreateQuoteDto } from "./dto/create-quote.dto";
 import { UpdateQuoteDto } from "./dto/update-quote.dto";
 import { Quote } from "./schemas/quote.schema";
 import { Model } from "mongoose";
-import { Category } from "src/category/schema/category.schema";
 import { UserLike } from "./schemas/user_likes.schema";
 import { TagsService } from "src/tags/tags.service";
 import { CategoryService } from "src/category/category.service";
@@ -30,10 +29,16 @@ export class QuotesService {
     return quote.save();
   }
 
-  async findAll(userId: string, query: PaginationParamsDto): Promise<{ quotes: Quote[]; total: number }> {
-    const total = await this.quotesModel.countDocuments();
+  async findAll(userId: string, query: PaginationParamsDto, isAdmin: boolean): Promise<{ quotes: Quote[]; total: number }> {
+    const total = await this.quotesModel.countDocuments({
+      ...(!isAdmin && { verified: true }),
+      ...(query.addedBy && { created_by: query.addedBy }),
+      ...(query.category && { category: await this.categoryService.getCategoryByName(query.category) }),
+      ...(query.tag && { tags: { $in: await this.tagsService.getTagByValue(query.tag) } }),
+    });
     const quotes = await this.quotesModel.find(
       {
+        ...(!isAdmin && { verified: true }),
         ...(query.addedBy && { created_by: query.addedBy }),
         ...(query.category && { category: await this.categoryService.getCategoryByName(query.category) }),
         ...(query.tag && { tags: { $in: await this.tagsService.getTagByValue(query.tag) } }),
@@ -41,7 +46,7 @@ export class QuotesService {
       {},
       {
         ...(query.limit && { limit: query.limit }),
-        ...(query.offset && { skip: query.offset }),
+        ...(query.page && { skip: query.limit * (query.page - 1) }),
         sort: { _id: -1 },
       },
     );
@@ -82,6 +87,17 @@ export class QuotesService {
     const create_userLike = new this.userLikesModel({ user_id: userId, quote_id: quoteId });
     await create_userLike.save();
     return "Quote liked";
+  }
+
+  async verify(userId: string, quoteId: string) {
+    try {
+      const quote = await this.quotesModel.findById(quoteId);
+      quote.verified = true;
+      return await quote.save();
+    } catch (error) {
+      console.error(error);
+      throw new BadGatewayException(error.message);
+    }
   }
 
   async remove(userId: string, quoteId: string) {

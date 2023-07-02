@@ -7,7 +7,7 @@ import { PaginationParamsDto } from "src/shared/dto/pagination-params.dto";
 import { UseGuards } from "@nestjs/common/decorators";
 import { AuthorizationGuard } from "src/authz/auth.guard";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
-import { isPublic } from "src/authz/access.decorator";
+import { check_permissions, isPublic } from "src/authz/access.decorator";
 
 @Controller("quotes")
 @ApiTags("quotes")
@@ -26,7 +26,8 @@ export class QuotesController {
   @UseGuards(AuthorizationGuard)
   async findAll(@Req() req, @Query() query: PaginationParamsDto) {
     const userId = req?.user?.sub || null;
-    return this.sharedService.successResponse("Get Quotes", await this.quotesService.findAll(userId, query));
+    const isAdmin = req?.user?.permissions.includes("verify:quotes") ? true : false;
+    return this.sharedService.successResponse("Get Quotes", await this.quotesService.findAll(userId, query, isAdmin));
   }
 
   @Get(":id")
@@ -45,7 +46,15 @@ export class QuotesController {
   @ApiBearerAuth()
   @UseGuards(AuthorizationGuard)
   async react(@Req() req, @Param("id") id: string) {
-    return this.sharedService.successResponse("React Quote", await this.quotesService.react(req.user.sub, id));
+    return this.sharedService.successResponse("React to quote", await this.quotesService.react(req.user.sub, id));
+  }
+
+  @Put(":id/verify")
+  @ApiBearerAuth()
+  @UseGuards(AuthorizationGuard)
+  @check_permissions("verify:quotes")
+  async verify(@Req() req, @Param("id") id: string) {
+    return this.sharedService.successResponse("Quote verified", await this.quotesService.verify(req.user.sub, id));
   }
 
   @Delete(":id")
