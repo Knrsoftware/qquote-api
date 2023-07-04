@@ -16,7 +16,7 @@ export class TagsController {
   @UseGuards(AuthorizationGuard)
   @check_permissions("create:tags")
   async createCategory(@Body() createTagsDto: CreateTagsDto) {
-    return this.sharedService.successResponse("Create Tag", await this.tagsService.createTag(createTagsDto));
+    return this.sharedService.successResponse("Tag created", await this.tagsService.createTag(createTagsDto));
   }
 
   @Get()
@@ -29,6 +29,6 @@ export class TagsController {
   @UseGuards(AuthorizationGuard)
   @check_permissions("delete:tags")
   async deleteOne(@Param("id") id: string) {
-    return this.sharedService.successResponse("Tags Delete", await this.tagsService.deleteTag(id));
+    return this.sharedService.successResponse("Tags deleted", await this.tagsService.deleteTag(id));
   }
 }

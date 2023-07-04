@@ -22,12 +22,13 @@ export class CategoryService {
     const categories = await this.categoriesModel.find();
     const results = await Promise.all(
       categories.map(async category => {
-        const total = await this.quotesModel.countDocuments({ category });
+        const total = await this.quotesModel.countDocuments({ category, verified: true });
         const newCategory = category.toObject();
         Object.assign(newCategory, { quotes_count: total });
         return newCategory;
       }),
     );
+    results.sort((a, b) => b["quotes_count"] - a["quotes_count"]);
     return results;
   }
 
@@ -40,6 +41,6 @@ export class CategoryService {
   }
 
   async deleteCategory(id: string): Promise<any> {
-    return await this.categoriesModel.deleteOne({ id });
+    return await this.categoriesModel.deleteOne({ _id: id });
   }
 }

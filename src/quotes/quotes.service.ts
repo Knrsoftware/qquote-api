@@ -1,4 +1,4 @@
-import { BadGatewayException, Injectable } from "@nestjs/common";
+import { BadGatewayException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { CreateQuoteDto } from "./dto/create-quote.dto";
 import { UpdateQuoteDto } from "./dto/update-quote.dto";
@@ -29,16 +29,16 @@ export class QuotesService {
     return quote.save();
   }
 
-  async findAll(userId: string, query: PaginationParamsDto, isAdmin: boolean): Promise<{ quotes: Quote[]; total: number }> {
+  async findAll(userId: string, query: PaginationParamsDto, hasPermission: boolean): Promise<{ quotes: Quote[]; total: number }> {
     const total = await this.quotesModel.countDocuments({
-      ...(!isAdmin && { verified: true }),
+      ...(!hasPermission && { verified: true }),
       ...(query.addedBy && { created_by: query.addedBy }),
       ...(query.category && { category: await this.categoryService.getCategoryByName(query.category) }),
       ...(query.tag && { tags: { $in: await this.tagsService.getTagByValue(query.tag) } }),
     });
     const quotes = await this.quotesModel.find(
       {
-        ...(!isAdmin && { verified: true }),
+        ...(!hasPermission && { verified: true }),
         ...(query.addedBy && { created_by: query.addedBy }),
         ...(query.category && { category: await this.categoryService.getCategoryByName(query.category) }),
         ...(query.tag && { tags: { $in: await this.tagsService.getTagByValue(query.tag) } }),
@@ -47,7 +47,7 @@ export class QuotesService {
       {
         ...(query.limit && { limit: query.limit }),
         ...(query.page && { skip: query.limit * (query.page - 1) }),
-        sort: { _id: -1 },
+        sort: { created_at: -1 },
       },
     );
     const results = await Promise.all(
@@ -61,20 +61,28 @@ export class QuotesService {
   }
 
   async findOne(id: string): Promise<Quote> {
-    return await this.quotesModel.findById(id);
+    const quote = await this.quotesModel.findById(id);
+    if (quote) {
+      return quote;
+    } else {
+      throw new NotFoundException("Quote not found");
+    }
   }
 
-  async update(userId: string, quoteId: string, updateQuoteDto: UpdateQuoteDto) {
-    try {
-      const quote = await this.quotesModel.findOne({ id: quoteId, created_by: userId });
+  async update(userId: string, quoteId: string, updateQuoteDto: UpdateQuoteDto, hasPermission: boolean) {
+    let quote;
+    if (hasPermission) {
+      quote = await this.quotesModel.findById(quoteId);
+    } else {
+      quote = await this.quotesModel.findOne({ _id: quoteId, created_by: userId });
+    }
+    if (quote) {
       if (updateQuoteDto.category) {
         quote.category = await this.categoryService.createCategory({ name: updateQuoteDto.category, description: updateQuoteDto.category });
       }
-      Object.assign(quote, updateQuoteDto);
-      return this.quotesModel.findOneAndUpdate({ id: quoteId }, quote);
-    } catch (error) {
-      console.error(error);
-      throw new BadGatewayException(error.message);
+      return await quote.save();
+    } else {
+      throw new NotFoundException("Quote not found");
     }
   }
 
@@ -100,7 +108,11 @@ export class QuotesService {
     }
   }
 
-  async remove(userId: string, quoteId: string) {
-    return await this.quotesModel.deleteOne({ _id: quoteId, created_by: userId });
+  async remove(userId: string, quoteId: string, hasPermission: boolean) {
+    if (hasPermission) {
+      return await this.quotesModel.deleteOne({ _id: quoteId });
+    } else {
+      return await this.quotesModel.deleteOne({ _id: quoteId, created_by: userId });
+    }
   }
 }

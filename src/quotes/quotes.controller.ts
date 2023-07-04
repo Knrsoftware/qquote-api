@@ -18,7 +18,7 @@ export class QuotesController {
   @ApiBearerAuth()
   @UseGuards(AuthorizationGuard)
   async create(@Req() req, @Body() createQuoteDto: CreateQuoteDto) {
-    return this.sharedService.successResponse("Create Quote", await this.quotesService.create(req.user.sub, createQuoteDto));
+    return this.sharedService.successResponse("Quote created", await this.quotesService.create(req.user.sub, createQuoteDto));
   }
 
   @Get()
@@ -26,8 +26,8 @@ export class QuotesController {
   @UseGuards(AuthorizationGuard)
   async findAll(@Req() req, @Query() query: PaginationParamsDto) {
     const userId = req?.user?.sub || null;
-    const isAdmin = req?.user?.permissions.includes("verify:quotes") ? true : false;
-    return this.sharedService.successResponse("Get Quotes", await this.quotesService.findAll(userId, query, isAdmin));
+    const hasPermission = req?.user?.permissions.includes("verify:quotes") ? true : false;
+    return this.sharedService.successResponse("Get Quotes", await this.quotesService.findAll(userId, query, hasPermission));
   }
 
   @Get(":id")
@@ -39,7 +39,8 @@ export class QuotesController {
   @ApiBearerAuth()
   @UseGuards(AuthorizationGuard)
   async update(@Req() req, @Param("id") id: string, @Body() updateQuoteDto: UpdateQuoteDto) {
-    return this.sharedService.successResponse("Update Quote", await this.quotesService.update(req.user.sub, id, updateQuoteDto));
+    const hasPermission = req?.user?.permissions.includes("edit:quotes") ? true : false;
+    return this.sharedService.successResponse("Quote updated", await this.quotesService.update(req.user.sub, id, updateQuoteDto, hasPermission));
   }
 
   @Put(":id/react")
@@ -61,6 +62,7 @@ export class QuotesController {
   @ApiBearerAuth()
   @UseGuards(AuthorizationGuard)
   async remove(@Req() req, @Param("id") id: string) {
-    return this.sharedService.successResponse("Delete Quote", await this.quotesService.remove(req.user.sub, id));
+    const hasPermission = req?.user?.permissions.includes("delete:quotes") ? true : false;
+    return this.sharedService.successResponse("Quote deleted", await this.quotesService.remove(req.user.sub, id, hasPermission));
   }
 }

@@ -22,8 +22,12 @@ export class SubscriptionsService {
     return subscriptions;
   }
 
-  async delete(email: string) {
+  async unsubscribe(email: string) {
     await this.subscriptionsModel.findOneAndUpdate({ email }, { active: false });
     return true;
+  }
+
+  async delete(id: string) {
+    return await this.subscriptionsModel.deleteOne({ _id: id });
   }
 }

@@ -16,17 +16,17 @@ export class CategoryController {
   @UseGuards(AuthorizationGuard)
   @check_permissions("create:categories")
   async createCategory(@Body() createCategoryDto: CreateCategoryDto) {
-    return this.sharedService.successResponse("Category Create", await this.categoryService.createCategory(createCategoryDto));
+    return this.sharedService.successResponse("Category Created", await this.categoryService.createCategory(createCategoryDto));
   }
 
   @Get()
   async getAll() {
-    return this.sharedService.successResponse("Category List", await this.categoryService.getCategories());
+    return this.sharedService.successResponse("Get Category List", await this.categoryService.getCategories());
   }
 
   @Get(":id")
   async getOne(@Param("id") id: string) {
-    return this.sharedService.successResponse("Category Detail", await this.categoryService.getCategory(id));
+    return this.sharedService.successResponse("Get Category", await this.categoryService.getCategory(id));
   }
 
   @Delete(":id")
@@ -34,6 +34,6 @@ export class CategoryController {
   @UseGuards(AuthorizationGuard)
   @check_permissions("delete:categories")
   async deleteOne(@Param("id") id: string) {
-    return this.sharedService.successResponse("Category Delete", await this.categoryService.deleteCategory(id));
+    return this.sharedService.successResponse("Category Deleted", await this.categoryService.deleteCategory(id));
   }
 }

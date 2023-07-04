@@ -24,7 +24,7 @@ export class TagsService {
     const tags = await this.tagsModel.find();
     const results = await Promise.all(
       tags.map(async tag => {
-        const total = await this.quotesModel.countDocuments({ tags: { $in: tag } });
+        const total = await this.quotesModel.countDocuments({ tags: { $in: tag }, verified: true });
         const newTag = tag.toObject();
         Object.assign(newTag, { quotes_count: total });
         return newTag;
@@ -42,6 +42,6 @@ export class TagsService {
   }
 
   async deleteTag(id: string): Promise<any> {
-    return await this.tagsModel.deleteOne({ id });
+    return await this.tagsModel.deleteOne({ _id: id });
   }
 }
