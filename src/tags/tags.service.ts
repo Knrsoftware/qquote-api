@@ -30,6 +30,7 @@ export class TagsService {
         return newTag;
       }),
     );
+    results.sort((a, b) => b["quotes_count"] - a["quotes_count"]);
     return results;
   }
 
