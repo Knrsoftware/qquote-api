@@ -20,7 +20,7 @@ export class SubscriptionsController {
     return this.sharedService.successResponse("Get subscribed emails", await this.subscriptionsService.getAll());
   }
 
-  @Get(":email/unsubscribe")
+  @Put(":email/unsubscribe")
   async edit(@Param("email") email: string) {
     return this.sharedService.successResponse("Unsubscribed from emails", await this.subscriptionsService.unsubscribe(email));
   }
