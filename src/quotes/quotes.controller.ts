@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param, Delete, Query, Req } from "@nestjs/common";
+import { Controller, Get, Post, Put, Body, Param, Delete, Query, Req, BadRequestException } from "@nestjs/common";
 import { QuotesService } from "./quotes.service";
 import { CreateQuoteDto } from "./dto/create-quote.dto";
 import { UpdateQuoteDto } from "./dto/update-quote.dto";
@@ -8,11 +8,14 @@ import { UseGuards } from "@nestjs/common/decorators";
 import { AuthorizationGuard } from "src/authz/auth.guard";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { check_permissions, isPublic } from "src/authz/access.decorator";
+import { ImageService } from "src/shared/image.service";
+import { join } from "path";
+import { DEFAULT_ROOT_PATH } from "@nestjs/serve-static";
 
 @Controller("quotes")
 @ApiTags("quotes")
 export class QuotesController {
-  constructor(private readonly quotesService: QuotesService, private sharedService: SharedService) {}
+  constructor(private readonly quotesService: QuotesService, private sharedService: SharedService, private imageSerivce: ImageService) {}
 
   @Post()
   @ApiBearerAuth()
@@ -33,6 +36,16 @@ export class QuotesController {
   @Get(":id")
   async findOne(@Param("id") id: string) {
     return this.sharedService.successResponse("Get Quote", await this.quotesService.findOne(id));
+  }
+
+  @Post(":id/image")
+  async getImage(@Param("id") id: string, @Req() req, @Body() reqBody: { base64string: string }) {
+    try {
+      this.imageSerivce.saveImage(reqBody.base64string, join(DEFAULT_ROOT_PATH, id + ".jpg"));
+      return this.sharedService.successResponse("", `${req.protocol}://${req.get("host")}/${id}.jpg`);
+    } catch (error) {
+      throw new BadRequestException();
+    }
   }
 
   @Put(":id")
