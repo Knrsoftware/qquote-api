@@ -41,8 +41,9 @@ export class QuotesController {
   @Post(":id/image")
   async getImage(@Param("id") id: string, @Req() req, @Body() reqBody: { base64string: string }) {
     try {
-      this.imageSerivce.saveImage(reqBody.base64string, join(DEFAULT_ROOT_PATH, id + ".jpg"));
-      return this.sharedService.successResponse("", `${req.protocol}://${req.get("host")}/${id}.jpg`);
+      const filename = new Date().getTime() + ".jpg";
+      this.imageSerivce.saveImage(reqBody.base64string, join(DEFAULT_ROOT_PATH, filename));
+      return this.sharedService.successResponse("", `${req.protocol}://${req.get("host")}/${filename}`);
     } catch (error) {
       throw new BadRequestException();
     }
